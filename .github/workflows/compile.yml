@@ -1,18 +1,27 @@
 name: Compile C++ to WASM
-on: [push]
+on: 
+  push:
+    branches: [ main ]
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+      
       - name: Install Emscripten
         run: |
           sudo apt-get update
           sudo apt-get install emscripten -y
+          
       - name: Compile
-        run: emcc --bind -O3 logic.cpp -o wasm_logic.js -s NO_EXIT_RUNTIME=1
+        run: |
+          emcc --bind -O3 logic.cpp -o wasm_logic.js -s NO_EXIT_RUNTIME=1 -s ALLOW_MEMORY_GROWTH=1
+          
       - name: Deploy to Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: .
+          publish_branch: gh-pages
